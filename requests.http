@@ -1,0 +1,306 @@
+### Sample API Requests
+### Save as: requests.http and use VS Code REST Client extension
+
+@baseUrl = http://localhost:5000/api/v1
+@accessToken = 
+
+# ============================================
+# AUTHENTICATION ENDPOINTS
+# ============================================
+
+### Register New User
+POST @baseUrl/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "SecurePassword123",
+  "fullName": "New User",
+  "role": "viewer"
+}
+
+### Login User
+POST @baseUrl/auth/login
+Content-Type: application/json
+
+{
+  "email": "analyst@example.com",
+  "password": "Analyst@123456"
+}
+
+### Get Current User Profile
+GET @baseUrl/auth/me
+Authorization: Bearer @accessToken
+
+### Refresh Access Token
+POST @baseUrl/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your_refresh_token_here"
+}
+
+# ============================================
+# USER MANAGEMENT ENDPOINTS
+# ============================================
+
+### Get All Users (Admin Only)
+GET @baseUrl/users?page=1&limit=20&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer @accessToken
+
+### Get Specific User
+GET @baseUrl/users/USER_ID_HERE
+Authorization: Bearer @accessToken
+
+### Update User
+PUT @baseUrl/users/USER_ID_HERE
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "fullName": "Updated Name",
+  "metadata": {
+    "department": "Finance",
+    "phone": "+1234567890"
+  }
+}
+
+### Change Password
+PUT @baseUrl/users/USER_ID_HERE/change-password
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "oldPassword": "Analyst@123456",
+  "newPassword": "NewPassword123",
+  "confirmPassword": "NewPassword123"
+}
+
+### Delete User (Admin Only)
+DELETE @baseUrl/users/USER_ID_HERE
+Authorization: Bearer @accessToken
+
+### Reset User Login Attempts (Admin Only)
+POST @baseUrl/users/USER_ID_HERE/reset-login
+Authorization: Bearer @accessToken
+
+# ============================================
+# FINANCIAL RECORDS ENDPOINTS
+# ============================================
+
+### Create Financial Record
+POST @baseUrl/records
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "amount": 5000,
+  "type": "income",
+  "category": "salary",
+  "description": "Monthly salary payment",
+  "date": "2024-01-15",
+  "tags": ["work", "monthly"],
+  "metadata": {
+    "paymentMethod": "bank_transfer",
+    "vendor": "Employer Inc"
+  }
+}
+
+### Create Expense Record
+POST @baseUrl/records
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "amount": 150,
+  "type": "expense",
+  "category": "food",
+  "description": "Grocery shopping at Whole Foods",
+  "date": "2024-01-20",
+  "tags": ["groceries", "weekly"],
+  "metadata": {
+    "paymentMethod": "credit_card"
+  }
+}
+
+### Get All Records (Paginated)
+GET @baseUrl/records?page=1&limit=20&sortBy=date&sortOrder=desc
+Authorization: Bearer @accessToken
+
+### Get Records with Filters
+GET @baseUrl/records?page=1&limit=10&type=expense&category=food&sortBy=date&sortOrder=desc
+Authorization: Bearer @accessToken
+
+### Get Records by Date Range
+GET @baseUrl/records?startDate=2024-01-01&endDate=2024-01-31&sortBy=amount&sortOrder=desc
+Authorization: Bearer @accessToken
+
+### Get Single Record
+GET @baseUrl/records/RECORD_ID_HERE
+Authorization: Bearer @accessToken
+
+### Update Record
+PUT @baseUrl/records/RECORD_ID_HERE
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "amount": 5500,
+  "description": "Updated salary amount",
+  "date": "2024-01-15"
+}
+
+### Delete Record
+DELETE @baseUrl/records/RECORD_ID_HERE
+Authorization: Bearer @accessToken
+
+### Export Records
+GET @baseUrl/records/export?startDate=2024-01-01&endDate=2024-12-31&type=income
+Authorization: Bearer @accessToken
+
+# ============================================
+# DASHBOARD ANALYTICS ENDPOINTS
+# ============================================
+
+### Get Financial Summary
+GET @baseUrl/dashboard/summary?startDate=2024-01-01&endDate=2024-01-31
+Authorization: Bearer @accessToken
+
+### Get Summary for Current Month
+GET @baseUrl/dashboard/summary
+Authorization: Bearer @accessToken
+
+### Get Monthly Trends (Last 12 Months)
+GET @baseUrl/dashboard/trends?months=12
+Authorization: Bearer @accessToken
+
+### Get Monthly Trends (Last 6 Months)
+GET @baseUrl/dashboard/trends?months=6
+Authorization: Bearer @accessToken
+
+### Get Category Breakdown
+GET @baseUrl/dashboard/categories?startDate=2024-01-01&endDate=2024-01-31
+Authorization: Bearer @accessToken
+
+### Get Recent Transactions
+GET @baseUrl/dashboard/recent?limit=10
+Authorization: Bearer @accessToken
+
+### Get Last 5 Recent Transactions
+GET @baseUrl/dashboard/recent?limit=5
+Authorization: Bearer @accessToken
+
+# ============================================
+# TESTING DIFFERENT ROLES
+# ============================================
+
+### Login as Admin
+POST @baseUrl/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Admin@123456"
+}
+
+### Login as Analyst
+POST @baseUrl/auth/login
+Content-Type: application/json
+
+{
+  "email": "analyst@example.com",
+  "password": "Analyst@123456"
+}
+
+### Login as Viewer
+POST @baseUrl/auth/login
+Content-Type: application/json
+
+{
+  "email": "viewer@example.com",
+  "password": "Viewer@123456"
+}
+
+# ============================================
+# TESTING PERMISSION RESTRICTIONS
+# ============================================
+
+### Viewer Cannot Create Record (Should Get 403)
+POST @baseUrl/records
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "amount": 100,
+  "type": "expense",
+  "category": "food"
+}
+
+### Viewer Cannot Export Data (Should Get 403)
+GET @baseUrl/records/export
+Authorization: Bearer @accessToken
+
+### Analyst Can Export Data (Should Get 200)
+GET @baseUrl/records/export
+Authorization: Bearer @accessToken
+
+### Non-Admin Cannot List Users (Should Get 403)
+GET @baseUrl/users
+Authorization: Bearer @accessToken
+
+# ============================================
+# ERROR HANDLING TESTS
+# ============================================
+
+### Invalid Token (Should Get 401)
+GET @baseUrl/dashboard/summary
+Authorization: Bearer invalid_token_here
+
+### No Token (Should Get 401)
+GET @baseUrl/dashboard/summary
+
+### Invalid Record ID (Should Get 404)
+GET @baseUrl/records/invalid_id_here
+Authorization: Bearer @accessToken
+
+### Validation Error - Missing Required Field (Should Get 400)
+POST @baseUrl/records
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "amount": 100
+}
+
+### Validation Error - Invalid Amount (Should Get 400)
+POST @baseUrl/records
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "amount": -100,
+  "type": "income",
+  "category": "salary"
+}
+
+### Invalid Date Format (Should Get 400)
+POST @baseUrl/records
+Authorization: Bearer @accessToken
+Content-Type: application/json
+
+{
+  "amount": 100,
+  "type": "income",
+  "category": "salary",
+  "date": "invalid-date"
+}
+
+# ============================================
+# HEALTH CHECK
+# ============================================
+
+### Health Check
+GET http://localhost:5000/health
+
+### API Documentation
+GET http://localhost:5000/api/docs
