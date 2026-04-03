@@ -812,10 +812,5 @@ All API responses follow a consistent format:
 
 MIT License - see LICENSE file for details
 
-## 📧 Support
-
-For support, email: support@finance-dashboard.com
-
----
 
 **Happy Coding! 🚀**
